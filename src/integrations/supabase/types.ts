@@ -77,6 +77,7 @@ export type Database = {
         Row: {
           completed_at: string | null
           created_at: string
+          estimated_minutes: number | null
           id: string
           is_completed: boolean | null
           student_id: string
@@ -87,6 +88,7 @@ export type Database = {
         Insert: {
           completed_at?: string | null
           created_at?: string
+          estimated_minutes?: number | null
           id?: string
           is_completed?: boolean | null
           student_id: string
@@ -97,6 +99,7 @@ export type Database = {
         Update: {
           completed_at?: string | null
           created_at?: string
+          estimated_minutes?: number | null
           id?: string
           is_completed?: boolean | null
           student_id?: string

@@ -13,6 +13,7 @@ interface Task {
   is_completed: boolean;
   created_at: string;
   completed_at: string | null;
+  estimated_minutes: number | null;
 }
 
 export const useTasks = (studentId: string | undefined) => {
@@ -41,7 +42,7 @@ export const useTasks = (studentId: string | undefined) => {
     fetchTasks();
   }, [studentId]);
 
-  const addTask = async (title: string, subject: SubjectType, taskType: TaskType) => {
+  const addTask = async (title: string, subject: SubjectType, taskType: TaskType, estimatedMinutes?: number) => {
     if (!studentId) return;
 
     const { data, error } = await supabase
@@ -50,7 +51,8 @@ export const useTasks = (studentId: string | undefined) => {
         student_id: studentId, 
         title, 
         subject, 
-        task_type: taskType 
+        task_type: taskType,
+        estimated_minutes: estimatedMinutes || null
       })
       .select()
       .single();
