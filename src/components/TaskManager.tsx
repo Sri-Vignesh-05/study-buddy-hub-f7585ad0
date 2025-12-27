@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Trash2, Atom, Beaker, Leaf } from 'lucide-react';
+import { Plus, Trash2, Atom, Beaker, Leaf, Clock, CheckCircle2, Circle } from 'lucide-react';
 import { toast } from 'sonner';
 
 type SubjectType = 'physics' | 'chemistry' | 'biology';
@@ -16,11 +17,12 @@ interface Task {
   subject: SubjectType;
   task_type: TaskType;
   is_completed: boolean;
+  estimated_minutes?: number | null;
 }
 
 interface TaskManagerProps {
   tasks: Task[];
-  onAddTask: (title: string, subject: SubjectType, taskType: TaskType) => void;
+  onAddTask: (title: string, subject: SubjectType, taskType: TaskType, estimatedMinutes?: number) => void;
   onToggleTask: (taskId: string) => void;
   onDeleteTask: (taskId: string) => void;
 }
@@ -51,6 +53,7 @@ const subjectConfig = {
 
 const TaskManager = ({ tasks, onAddTask, onToggleTask, onDeleteTask }: TaskManagerProps) => {
   const [newTask, setNewTask] = useState('');
+  const [estimatedTime, setEstimatedTime] = useState('');
   const [selectedSubject, setSelectedSubject] = useState<SubjectType>('physics');
   const [selectedType, setSelectedType] = useState<TaskType>('daily');
 
@@ -59,9 +62,18 @@ const TaskManager = ({ tasks, onAddTask, onToggleTask, onDeleteTask }: TaskManag
       toast.error('Please enter a task');
       return;
     }
-    onAddTask(newTask.trim(), selectedSubject, selectedType);
+    const minutes = estimatedTime ? parseInt(estimatedTime) : undefined;
+    onAddTask(newTask.trim(), selectedSubject, selectedType, minutes);
     setNewTask('');
+    setEstimatedTime('');
     toast.success('Task added! 📝');
+  };
+
+  const formatTime = (minutes: number) => {
+    if (minutes < 60) return `${minutes}m`;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
   };
 
   const filteredTasks = (subject: SubjectType, type: TaskType) => {
@@ -85,19 +97,34 @@ const TaskManager = ({ tasks, onAddTask, onToggleTask, onDeleteTask }: TaskManag
         {subjectTasks.map((task) => (
           <div
             key={task.id}
-            className={`flex items-center gap-3 p-3 rounded-lg border-l-4 ${config.bgClass} ${config.borderClass} transition-all`}
+            className={`flex items-center gap-3 p-3 rounded-lg border-l-4 ${config.bgClass} ${config.borderClass} transition-all cursor-pointer`}
+            onClick={() => onToggleTask(task.id)}
           >
-            <Checkbox
-              checked={task.is_completed}
-              onCheckedChange={() => onToggleTask(task.id)}
-            />
-            <span className={`flex-1 ${task.is_completed ? 'line-through text-muted-foreground' : ''}`}>
-              {task.title}
-            </span>
+            <div className="flex items-center justify-center">
+              {task.is_completed ? (
+                <CheckCircle2 className={`w-5 h-5 ${config.textClass}`} />
+              ) : (
+                <Circle className="w-5 h-5 text-muted-foreground" />
+              )}
+            </div>
+            <div className="flex-1">
+              <span className={`${task.is_completed ? 'line-through text-muted-foreground' : ''}`}>
+                {task.title}
+              </span>
+              {task.estimated_minutes && (
+                <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                  <Clock className="w-3 h-3" />
+                  <span>{formatTime(task.estimated_minutes)}</span>
+                </div>
+              )}
+            </div>
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => onDeleteTask(task.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeleteTask(task.id);
+              }}
               className="text-destructive hover:bg-destructive/10"
             >
               <Trash2 className="w-4 h-4" />
@@ -124,6 +151,17 @@ const TaskManager = ({ tasks, onAddTask, onToggleTask, onDeleteTask }: TaskManag
               onKeyDown={(e) => e.key === 'Enter' && handleAddTask()}
               className="flex-1"
             />
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-muted-foreground" />
+              <Input
+                type="number"
+                placeholder="mins"
+                value={estimatedTime}
+                onChange={(e) => setEstimatedTime(e.target.value)}
+                className="w-20"
+                min="1"
+              />
+            </div>
             <Button onClick={handleAddTask} className="gradient-hero">
               <Plus className="w-4 h-4 mr-1" />
               Add
