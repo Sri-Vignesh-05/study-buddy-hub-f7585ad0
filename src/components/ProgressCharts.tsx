@@ -1,10 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Atom, Beaker, Leaf } from 'lucide-react';
+import { Atom, Beaker, Leaf } from 'lucide-react';
 
 interface ProgressChartsProps {
-  weeklyData: { date: string; hours: number }[];
   completionStats: {
     total: number;
     completed: number;
@@ -17,49 +15,13 @@ interface ProgressChartsProps {
   };
 }
 
-const ProgressCharts = ({ weeklyData, completionStats }: ProgressChartsProps) => {
+const ProgressCharts = ({ completionStats }: ProgressChartsProps) => {
   const getPercentage = (completed: number, total: number) => {
     return total > 0 ? Math.round((completed / total) * 100) : 0;
   };
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:gap-6">
-      {/* Weekly Study Hours Chart */}
-      <Card>
-        <CardHeader className="pb-2 sm:pb-4">
-          <CardTitle className="flex items-center gap-2 font-display text-base sm:text-lg">
-            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-            Weekly Study Hours
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="px-2 sm:px-6">
-          <div className="h-48 sm:h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklyData} margin={{ left: -20, right: 5, top: 5, bottom: 5 }}>
-                <XAxis dataKey="date" tick={{ fontSize: 10 }} interval={0} />
-                <YAxis tick={{ fontSize: 10 }} width={30} />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                    fontSize: '12px'
-                  }}
-                  formatter={(value) => [`${value} hrs`, 'Study Time']}
-                />
-                <Bar 
-                  dataKey="hours" 
-                  fill="hsl(var(--primary))" 
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Subject-wise Progress */}
-      <Card>
+    <Card>
         <CardHeader className="pb-2 sm:pb-4">
           <CardTitle className="font-display text-base sm:text-lg">Task Completion by Subject</CardTitle>
         </CardHeader>
@@ -129,8 +91,7 @@ const ProgressCharts = ({ weeklyData, completionStats }: ProgressChartsProps) =>
             />
           </div>
         </CardContent>
-      </Card>
-    </div>
+    </Card>
   );
 };
 

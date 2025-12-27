@@ -70,7 +70,6 @@ const Dashboard = () => {
             onStudyLogged={handleStudyLogged}
           />
           <ProgressCharts 
-            weeklyData={getWeeklyData()}
             completionStats={completionStats}
           />
         </section>
