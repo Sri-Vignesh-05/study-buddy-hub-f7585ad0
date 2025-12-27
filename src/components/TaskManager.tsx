@@ -97,7 +97,7 @@ const TaskManager = ({ tasks, onAddTask, onToggleTask, onDeleteTask }: TaskManag
         {subjectTasks.map((task) => (
           <div
             key={task.id}
-            className={`flex items-center gap-3 p-3 rounded-lg border-l-4 ${config.bgClass} ${config.borderClass} transition-all cursor-pointer`}
+            className={`flex items-center gap-3 p-3 rounded-lg border-l-4 ${config.bgClass} ${config.borderClass} transition-all cursor-pointer ${task.is_completed ? 'opacity-60' : ''}`}
             onClick={() => onToggleTask(task.id)}
           >
             <div className="flex items-center justify-center">
@@ -108,7 +108,7 @@ const TaskManager = ({ tasks, onAddTask, onToggleTask, onDeleteTask }: TaskManag
               )}
             </div>
             <div className="flex-1">
-              <span className={`${task.is_completed ? 'line-through text-muted-foreground' : ''}`}>
+              <span className={`${task.is_completed ? 'text-muted-foreground' : ''}`}>
                 {task.title}
               </span>
               {task.estimated_minutes && (
