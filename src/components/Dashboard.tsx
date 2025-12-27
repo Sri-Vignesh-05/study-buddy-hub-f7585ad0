@@ -37,12 +37,7 @@ const Dashboard = () => {
               </p>
             </div>
           </div>
-          <Link to="/admin">
-            <Button variant="outline" size="sm" className="gap-1 sm:gap-2 text-xs sm:text-sm shrink-0">
-              <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden xs:inline">Admin</span>
-            </Button>
-          </Link>
+
         </div>
       </header>
 
@@ -55,7 +50,7 @@ const Dashboard = () => {
 
         {/* Stats */}
         <section className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
-          <StreakCounter 
+          <StreakCounter
             streak={student?.current_streak || 0}
             totalHours={getTotalHours()}
             completedTasks={completionStats.completed}
@@ -64,19 +59,19 @@ const Dashboard = () => {
 
         {/* Study Time & Progress */}
         <section className="grid grid-cols-1 gap-4 sm:gap-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-          <StudyTimeLogger 
+          <StudyTimeLogger
             currentHours={getTodaysHours()}
             onLogTime={logStudyTime}
             onStudyLogged={handleStudyLogged}
           />
-          <ProgressCharts 
+          <ProgressCharts
             completionStats={completionStats}
           />
         </section>
 
         {/* Task Manager */}
         <section className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
-          <TaskManager 
+          <TaskManager
             tasks={tasks}
             onAddTask={addTask}
             onToggleTask={toggleTask}

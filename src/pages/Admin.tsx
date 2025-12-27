@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -13,12 +12,17 @@ const Admin = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const [studentsRes, tasksRes] = await Promise.all([
-        supabase.from('students').select('*').order('created_at', { ascending: false }),
-        supabase.from('tasks').select('*').order('created_at', { ascending: false })
-      ]);
-      if (studentsRes.data) setStudents(studentsRes.data);
-      if (tasksRes.data) setTasks(tasksRes.data);
+      try {
+        const [studentsRes, tasksRes] = await Promise.all([
+          fetch('http://localhost:5000/api/students').then(r => r.json()),
+          fetch('http://localhost:5000/api/tasks').then(r => r.json())
+        ]);
+
+        if (studentsRes.data) setStudents(studentsRes.data);
+        if (tasksRes.data) setTasks(tasksRes.data);
+      } catch (err) {
+        console.error("Failed to fetch admin data", err);
+      }
       setLoading(false);
     };
     fetchData();

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 
 interface StudyLog {
   id: string;
@@ -8,6 +7,8 @@ interface StudyLog {
   hours: number;
   created_at: string;
 }
+
+const API_URL = 'http://localhost:5000/api';
 
 export const useStudyLogs = (studentId: string | undefined) => {
   const [logs, setLogs] = useState<StudyLog[]>([]);
@@ -19,15 +20,15 @@ export const useStudyLogs = (studentId: string | undefined) => {
       return;
     }
 
-    const { data, error } = await supabase
-      .from('study_logs')
-      .select('*')
-      .eq('student_id', studentId)
-      .order('study_date', { ascending: false })
-      .limit(30);
+    try {
+      const response = await fetch(`${API_URL}/study_logs?student_id=${studentId}`);
+      const { data, error } = await response.json();
 
-    if (!error && data) {
-      setLogs(data.map(log => ({ ...log, hours: Number(log.hours) })));
+      if (!error && data) {
+        setLogs(data.map((log: any) => ({ ...log, hours: Number(log.hours) })));
+      }
+    } catch (err) {
+      console.error("Failed to fetch logs", err);
     }
     setLoading(false);
   };
@@ -44,27 +45,34 @@ export const useStudyLogs = (studentId: string | undefined) => {
     // Check if entry exists for today
     const existing = logs.find(l => l.study_date === today);
 
-    if (existing) {
-      const { error } = await supabase
-        .from('study_logs')
-        .update({ hours })
-        .eq('id', existing.id);
+    try {
+      if (existing) {
+        const response = await fetch(`${API_URL}/study_logs/${existing.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ hours })
+        });
+        const { data, error } = await response.json();
 
-      if (!error) {
-        setLogs(prev => prev.map(l => 
-          l.id === existing.id ? { ...l, hours } : l
-        ));
-      }
-    } else {
-      const { data, error } = await supabase
-        .from('study_logs')
-        .insert({ student_id: studentId, hours, study_date: today })
-        .select()
-        .single();
+        if (!error) {
+          setLogs(prev => prev.map(l =>
+            l.id === existing.id ? { ...l, hours } : l
+          ));
+        }
+      } else {
+        const response = await fetch(`${API_URL}/study_logs`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ student_id: studentId, hours, study_date: today })
+        });
+        const { data, error } = await response.json();
 
-      if (!error && data) {
-        setLogs(prev => [{ ...data, hours: Number(data.hours) }, ...prev]);
+        if (!error && data) {
+          setLogs(prev => [{ ...data, hours: Number(data.hours) }, ...prev]);
+        }
       }
+    } catch (err) {
+      console.error("Failed to log study time", err);
     }
   };
 
@@ -96,13 +104,13 @@ export const useStudyLogs = (studentId: string | undefined) => {
     return logs.reduce((sum, log) => sum + log.hours, 0);
   };
 
-  return { 
-    logs, 
-    loading, 
-    logStudyTime, 
-    getTodaysHours, 
+  return {
+    logs,
+    loading,
+    logStudyTime,
+    getTodaysHours,
     getWeeklyData,
     getTotalHours,
-    refetch: fetchLogs 
+    refetch: fetchLogs
   };
 };

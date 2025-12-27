@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 
 interface Student {
   id: string;
@@ -11,6 +10,7 @@ interface Student {
 }
 
 const STUDENT_ID_KEY = 'neet_student_id';
+const API_URL = 'http://localhost:5000/api';
 
 export const useStudent = () => {
   const [student, setStudent] = useState<Student | null>(null);
@@ -19,21 +19,23 @@ export const useStudent = () => {
   useEffect(() => {
     const loadStudent = async () => {
       const storedId = localStorage.getItem(STUDENT_ID_KEY);
-      
-      if (storedId) {
-        const { data, error } = await supabase
-          .from('students')
-          .select('*')
-          .eq('id', storedId)
-          .maybeSingle();
 
-        if (data && !error) {
-          setStudent(data);
-        } else {
-          localStorage.removeItem(STUDENT_ID_KEY);
+      if (storedId) {
+        try {
+          const response = await fetch(`${API_URL}/students/${storedId}`);
+          const { data, error } = await response.json();
+
+          if (data && !error) {
+            setStudent(data);
+          } else {
+            localStorage.removeItem(STUDENT_ID_KEY);
+          }
+        } catch (err) {
+          console.error("Failed to load student", err);
+          // Don't remove ID immediately on network error, but maybe here we assume invalid ID
         }
       }
-      
+
       setLoading(false);
     };
 
@@ -41,19 +43,26 @@ export const useStudent = () => {
   }, []);
 
   const registerStudent = async (name: string, age: number) => {
-    const { data, error } = await supabase
-      .from('students')
-      .insert({ name, age })
-      .select()
-      .single();
+    try {
+      const response = await fetch(`${API_URL}/students`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, age })
+      });
 
-    if (error) {
-      throw error;
+      const { data, error } = await response.json();
+
+      if (error) {
+        throw new Error(error);
+      }
+
+      localStorage.setItem(STUDENT_ID_KEY, data.id);
+      setStudent(data);
+      return data;
+    } catch (err) {
+      console.error("Registration failed", err);
+      throw err;
     }
-
-    localStorage.setItem(STUDENT_ID_KEY, data.id);
-    setStudent(data);
-    return data;
   };
 
   const updateStreak = async () => {
@@ -63,22 +72,30 @@ export const useStudent = () => {
     const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 
     let newStreak = 1;
-    
+
     if (student.last_study_date === today) {
       return; // Already studied today
     } else if (student.last_study_date === yesterday) {
       newStreak = student.current_streak + 1;
     }
 
-    const { data, error } = await supabase
-      .from('students')
-      .update({ current_streak: newStreak, last_study_date: today })
-      .eq('id', student.id)
-      .select()
-      .single();
+    try {
+      const response = await fetch(`${API_URL}/students/${student.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          current_streak: newStreak,
+          last_study_date: today
+        })
+      });
 
-    if (!error && data) {
-      setStudent(data);
+      const { data, error } = await response.json();
+
+      if (!error && data) {
+        setStudent(data);
+      }
+    } catch (err) {
+      console.error("Failed to update streak", err);
     }
   };
 
