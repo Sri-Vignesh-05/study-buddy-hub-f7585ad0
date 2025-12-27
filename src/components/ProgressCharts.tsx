@@ -23,26 +23,27 @@ const ProgressCharts = ({ weeklyData, completionStats }: ProgressChartsProps) =>
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 gap-4 sm:gap-6">
       {/* Weekly Study Hours Chart */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 font-display">
-            <TrendingUp className="w-5 h-5 text-primary" />
+        <CardHeader className="pb-2 sm:pb-4">
+          <CardTitle className="flex items-center gap-2 font-display text-base sm:text-lg">
+            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
             Weekly Study Hours
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="h-64">
+        <CardContent className="px-2 sm:px-6">
+          <div className="h-48 sm:h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklyData}>
-                <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
+              <BarChart data={weeklyData} margin={{ left: -20, right: 5, top: 5, bottom: 5 }}>
+                <XAxis dataKey="date" tick={{ fontSize: 10 }} interval={0} />
+                <YAxis tick={{ fontSize: 10 }} width={30} />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: 'hsl(var(--card))',
                     border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px'
+                    borderRadius: '8px',
+                    fontSize: '12px'
                   }}
                   formatter={(value) => [`${value} hrs`, 'Study Time']}
                 />
@@ -59,72 +60,72 @@ const ProgressCharts = ({ weeklyData, completionStats }: ProgressChartsProps) =>
 
       {/* Subject-wise Progress */}
       <Card>
-        <CardHeader>
-          <CardTitle className="font-display">Task Completion by Subject</CardTitle>
+        <CardHeader className="pb-2 sm:pb-4">
+          <CardTitle className="font-display text-base sm:text-lg">Task Completion by Subject</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 sm:space-y-6">
           {/* Overall Progress */}
           <div className="space-y-2">
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-xs sm:text-sm gap-2">
               <span className="font-medium">Overall Progress</span>
-              <span className="text-muted-foreground">
-                {completionStats.completed}/{completionStats.total} tasks ({completionStats.percentage}%)
+              <span className="text-muted-foreground shrink-0">
+                {completionStats.completed}/{completionStats.total} ({completionStats.percentage}%)
               </span>
             </div>
-            <Progress value={completionStats.percentage} className="h-3" />
+            <Progress value={completionStats.percentage} className="h-2 sm:h-3" />
           </div>
 
           {/* Physics */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2">
-                <Atom className="w-4 h-4 text-physics" />
+            <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Atom className="w-3 h-3 sm:w-4 sm:h-4 text-physics shrink-0" />
                 <span className="font-medium">Physics</span>
               </div>
-              <span className="text-muted-foreground">
+              <span className="text-muted-foreground shrink-0">
                 {completionStats.bySubject.physics.completed}/{completionStats.bySubject.physics.total} (
                 {getPercentage(completionStats.bySubject.physics.completed, completionStats.bySubject.physics.total)}%)
               </span>
             </div>
             <Progress 
               value={getPercentage(completionStats.bySubject.physics.completed, completionStats.bySubject.physics.total)} 
-              className="h-2 [&>div]:bg-physics"
+              className="h-1.5 sm:h-2 [&>div]:bg-physics"
             />
           </div>
 
           {/* Chemistry */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2">
-                <Beaker className="w-4 h-4 text-chemistry" />
+            <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Beaker className="w-3 h-3 sm:w-4 sm:h-4 text-chemistry shrink-0" />
                 <span className="font-medium">Chemistry</span>
               </div>
-              <span className="text-muted-foreground">
+              <span className="text-muted-foreground shrink-0">
                 {completionStats.bySubject.chemistry.completed}/{completionStats.bySubject.chemistry.total} (
                 {getPercentage(completionStats.bySubject.chemistry.completed, completionStats.bySubject.chemistry.total)}%)
               </span>
             </div>
             <Progress 
               value={getPercentage(completionStats.bySubject.chemistry.completed, completionStats.bySubject.chemistry.total)} 
-              className="h-2 [&>div]:bg-chemistry"
+              className="h-1.5 sm:h-2 [&>div]:bg-chemistry"
             />
           </div>
 
           {/* Biology */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2">
-                <Leaf className="w-4 h-4 text-biology" />
+            <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Leaf className="w-3 h-3 sm:w-4 sm:h-4 text-biology shrink-0" />
                 <span className="font-medium">Biology</span>
               </div>
-              <span className="text-muted-foreground">
+              <span className="text-muted-foreground shrink-0">
                 {completionStats.bySubject.biology.completed}/{completionStats.bySubject.biology.total} (
                 {getPercentage(completionStats.bySubject.biology.completed, completionStats.bySubject.biology.total)}%)
               </span>
             </div>
             <Progress 
               value={getPercentage(completionStats.bySubject.biology.completed, completionStats.bySubject.biology.total)} 
-              className="h-2 [&>div]:bg-biology"
+              className="h-1.5 sm:h-2 [&>div]:bg-biology"
             />
           </div>
         </CardContent>

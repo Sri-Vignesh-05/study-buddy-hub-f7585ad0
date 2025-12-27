@@ -33,23 +33,23 @@ const StudyTimeLogger = ({ currentHours, onLogTime, onStudyLogged }: StudyTimeLo
   return (
     <Card className="relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-1 gradient-hero" />
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 font-display">
-          <Clock className="w-5 h-5 text-primary" />
+      <CardHeader className="pb-2 sm:pb-4">
+        <CardTitle className="flex items-center gap-2 font-display text-base sm:text-lg">
+          <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
           Today's Study Time
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center gap-3">
+      <CardContent className="space-y-3 sm:space-y-4">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Button 
             variant="outline" 
             size="icon"
             onClick={() => handleQuickAdd(-0.5)}
-            className="shrink-0"
+            className="shrink-0 w-8 h-8 sm:w-10 sm:h-10"
           >
-            <Minus className="w-4 h-4" />
+            <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
           </Button>
-          <div className="relative flex-1">
+          <div className="relative flex-1 min-w-0">
             <Input
               type="number"
               step="0.5"
@@ -57,9 +57,9 @@ const StudyTimeLogger = ({ currentHours, onLogTime, onStudyLogged }: StudyTimeLo
               max="24"
               value={hours}
               onChange={(e) => setHours(e.target.value)}
-              className="text-center text-2xl font-bold h-14"
+              className="text-center text-lg sm:text-2xl font-bold h-10 sm:h-14 pr-12 sm:pr-16"
             />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+            <span className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-muted-foreground">
               hours
             </span>
           </div>
@@ -67,19 +67,19 @@ const StudyTimeLogger = ({ currentHours, onLogTime, onStudyLogged }: StudyTimeLo
             variant="outline" 
             size="icon"
             onClick={() => handleQuickAdd(0.5)}
-            className="shrink-0"
+            className="shrink-0 w-8 h-8 sm:w-10 sm:h-10"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
           </Button>
         </div>
 
-        <div className="flex gap-2">
+        <div className="grid grid-cols-5 gap-1 sm:gap-2">
           {[1, 2, 4, 6, 8].map((h) => (
             <Button
               key={h}
               variant="secondary"
               size="sm"
-              className="flex-1"
+              className="text-xs sm:text-sm px-1 sm:px-3"
               onClick={() => setHours(h.toString())}
             >
               {h}h
@@ -87,7 +87,7 @@ const StudyTimeLogger = ({ currentHours, onLogTime, onStudyLogged }: StudyTimeLo
           ))}
         </div>
 
-        <Button onClick={handleSave} className="w-full gradient-hero hover:opacity-90">
+        <Button onClick={handleSave} className="w-full gradient-hero hover:opacity-90 text-sm sm:text-base">
           Log Study Time
         </Button>
       </CardContent>
