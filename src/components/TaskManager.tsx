@@ -136,40 +136,42 @@ const TaskManager = ({ tasks, onAddTask, onToggleTask, onDeleteTask }: TaskManag
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-display">Task Manager</CardTitle>
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-2 sm:pb-4">
+        <CardTitle className="font-display text-base sm:text-lg">Task Manager</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4 sm:space-y-6 px-3 sm:px-6">
         {/* Add Task Section */}
-        <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
-          <div className="flex gap-2">
+        <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-muted/50 rounded-lg">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Input
               placeholder="Enter a new task..."
               value={newTask}
               onChange={(e) => setNewTask(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddTask()}
-              className="flex-1"
+              className="flex-1 text-sm"
             />
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-muted-foreground" />
-              <Input
-                type="number"
-                placeholder="mins"
-                value={estimatedTime}
-                onChange={(e) => setEstimatedTime(e.target.value)}
-                className="w-20"
-                min="1"
-              />
+              <div className="flex items-center gap-1 sm:gap-2 flex-1 sm:flex-none">
+                <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground shrink-0" />
+                <Input
+                  type="number"
+                  placeholder="mins"
+                  value={estimatedTime}
+                  onChange={(e) => setEstimatedTime(e.target.value)}
+                  className="w-16 sm:w-20 text-sm"
+                  min="1"
+                />
+              </div>
+              <Button onClick={handleAddTask} className="gradient-hero shrink-0 text-sm">
+                <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                Add
+              </Button>
             </div>
-            <Button onClick={handleAddTask} className="gradient-hero">
-              <Plus className="w-4 h-4 mr-1" />
-              Add
-            </Button>
           </div>
           
-          <div className="flex flex-wrap gap-2">
-            <div className="flex gap-1">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="grid grid-cols-3 gap-1 sm:flex sm:gap-1">
               {(Object.keys(subjectConfig) as SubjectType[]).map((subject) => {
                 const config = subjectConfig[subject];
                 const Icon = config.icon;
@@ -179,22 +181,23 @@ const TaskManager = ({ tasks, onAddTask, onToggleTask, onDeleteTask }: TaskManag
                     variant={selectedSubject === subject ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setSelectedSubject(subject)}
-                    className={selectedSubject === subject ? '' : config.textClass}
+                    className={`text-xs sm:text-sm px-2 sm:px-3 ${selectedSubject === subject ? '' : config.textClass}`}
                   >
-                    <Icon className="w-4 h-4 mr-1" />
-                    {config.label}
+                    <Icon className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1" />
+                    <span className="hidden xs:inline">{config.label}</span>
+                    <span className="xs:hidden">{config.label.slice(0, 3)}</span>
                   </Button>
                 );
               })}
             </div>
-            <div className="flex gap-1">
+            <div className="grid grid-cols-3 gap-1 sm:flex sm:gap-1">
               {(['daily', 'weekly', 'monthly'] as TaskType[]).map((type) => (
                 <Button
                   key={type}
                   variant={selectedType === type ? 'secondary' : 'ghost'}
                   size="sm"
                   onClick={() => setSelectedType(type)}
-                  className="capitalize"
+                  className="capitalize text-xs sm:text-sm px-2 sm:px-3"
                 >
                   {type}
                 </Button>
@@ -204,35 +207,36 @@ const TaskManager = ({ tasks, onAddTask, onToggleTask, onDeleteTask }: TaskManag
         </div>
 
         {/* Task List by Subject */}
-        <Tabs defaultValue="physics">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue="physics" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 h-auto">
             {(Object.keys(subjectConfig) as SubjectType[]).map((subject) => {
               const config = subjectConfig[subject];
               const Icon = config.icon;
               return (
-                <TabsTrigger key={subject} value={subject} className="gap-2">
-                  <Icon className="w-4 h-4" />
-                  {config.label}
+                <TabsTrigger key={subject} value={subject} className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+                  <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden xs:inline">{config.label}</span>
+                  <span className="xs:hidden">{config.label.slice(0, 3)}</span>
                 </TabsTrigger>
               );
             })}
           </TabsList>
           
           {(Object.keys(subjectConfig) as SubjectType[]).map((subject) => (
-            <TabsContent key={subject} value={subject} className="space-y-4 mt-4">
-              <Tabs defaultValue="daily">
-                <TabsList className="w-full">
-                  <TabsTrigger value="daily" className="flex-1">Daily</TabsTrigger>
-                  <TabsTrigger value="weekly" className="flex-1">Weekly</TabsTrigger>
-                  <TabsTrigger value="monthly" className="flex-1">Monthly</TabsTrigger>
+            <TabsContent key={subject} value={subject} className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
+              <Tabs defaultValue="daily" className="w-full">
+                <TabsList className="w-full h-auto">
+                  <TabsTrigger value="daily" className="flex-1 text-xs sm:text-sm py-1.5">Daily</TabsTrigger>
+                  <TabsTrigger value="weekly" className="flex-1 text-xs sm:text-sm py-1.5">Weekly</TabsTrigger>
+                  <TabsTrigger value="monthly" className="flex-1 text-xs sm:text-sm py-1.5">Monthly</TabsTrigger>
                 </TabsList>
-                <TabsContent value="daily" className="mt-4">
+                <TabsContent value="daily" className="mt-3 sm:mt-4">
                   {renderTaskList(subject, 'daily')}
                 </TabsContent>
-                <TabsContent value="weekly" className="mt-4">
+                <TabsContent value="weekly" className="mt-3 sm:mt-4">
                   {renderTaskList(subject, 'weekly')}
                 </TabsContent>
-                <TabsContent value="monthly" className="mt-4">
+                <TabsContent value="monthly" className="mt-3 sm:mt-4">
                   {renderTaskList(subject, 'monthly')}
                 </TabsContent>
               </Tabs>

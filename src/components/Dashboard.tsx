@@ -22,32 +22,32 @@ const Dashboard = () => {
   const completionStats = getCompletionStats();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full gradient-hero flex items-center justify-center">
-              <Stethoscope className="w-5 h-5 text-primary-foreground" />
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full gradient-hero flex items-center justify-center shrink-0">
+              <Stethoscope className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
             </div>
-            <div>
-              <h1 className="font-display text-xl font-bold">NEET Tracker</h1>
-              <p className="text-sm text-muted-foreground">
+            <div className="min-w-0">
+              <h1 className="font-display text-lg sm:text-xl font-bold truncate">NEET Tracker</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground truncate">
                 Welcome, {student?.name || 'Future Doctor'}!
               </p>
             </div>
           </div>
           <Link to="/admin">
-            <Button variant="outline" size="sm" className="gap-2">
-              <Settings className="w-4 h-4" />
-              Admin
+            <Button variant="outline" size="sm" className="gap-1 sm:gap-2 text-xs sm:text-sm shrink-0">
+              <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden xs:inline">Admin</span>
             </Button>
           </Link>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 space-y-8">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-8 max-w-full overflow-x-hidden">
         {/* Motivational Quote */}
         <section className="animate-fade-in">
           <MotivationalBanner />
@@ -63,20 +63,16 @@ const Dashboard = () => {
         </section>
 
         {/* Study Time & Progress */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-          <div className="lg:col-span-1">
-            <StudyTimeLogger 
-              currentHours={getTodaysHours()}
-              onLogTime={logStudyTime}
-              onStudyLogged={handleStudyLogged}
-            />
-          </div>
-          <div className="lg:col-span-2">
-            <ProgressCharts 
-              weeklyData={getWeeklyData()}
-              completionStats={completionStats}
-            />
-          </div>
+        <section className="grid grid-cols-1 gap-4 sm:gap-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <StudyTimeLogger 
+            currentHours={getTodaysHours()}
+            onLogTime={logStudyTime}
+            onStudyLogged={handleStudyLogged}
+          />
+          <ProgressCharts 
+            weeklyData={getWeeklyData()}
+            completionStats={completionStats}
+          />
         </section>
 
         {/* Task Manager */}
