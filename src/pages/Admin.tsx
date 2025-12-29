@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Users, ClipboardList } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const Admin = () => {
   const [students, setStudents] = useState<any[]>([]);
@@ -14,8 +15,8 @@ const Admin = () => {
     const fetchData = async () => {
       try {
         const [studentsRes, tasksRes] = await Promise.all([
-          fetch('http://localhost:5000/api/students').then(r => r.json()),
-          fetch('http://localhost:5000/api/tasks').then(r => r.json())
+          supabase.from('students').select('*'),
+          supabase.from('tasks').select('*')
         ]);
 
         if (studentsRes.data) setStudents(studentsRes.data);
