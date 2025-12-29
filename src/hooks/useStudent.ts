@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Student {
   id: string;
   name: string;
   age: number;
-  current_streak: number;
+  current_streak: number | null;
   last_study_date: string | null;
   created_at: string;
 }
 
 const STUDENT_ID_KEY = 'neet_student_id';
-const API_URL = 'http://localhost:5000/api';
 
 export const useStudent = () => {
   const [student, setStudent] = useState<Student | null>(null);
@@ -22,8 +22,11 @@ export const useStudent = () => {
 
       if (storedId) {
         try {
-          const response = await fetch(`${API_URL}/students/${storedId}`);
-          const { data, error } = await response.json();
+          const { data, error } = await supabase
+            .from('students')
+            .select('*')
+            .eq('id', storedId)
+            .single();
 
           if (data && !error) {
             setStudent(data);
@@ -32,7 +35,6 @@ export const useStudent = () => {
           }
         } catch (err) {
           console.error("Failed to load student", err);
-          // Don't remove ID immediately on network error, but maybe here we assume invalid ID
         }
       }
 
@@ -44,16 +46,30 @@ export const useStudent = () => {
 
   const registerStudent = async (name: string, age: number) => {
     try {
-      const response = await fetch(`${API_URL}/students`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, age })
-      });
+      // Check if student with same name and age already exists
+      const { data: existingStudent, error: searchError } = await supabase
+        .from('students')
+        .select('*')
+        .eq('name', name.trim())
+        .eq('age', age)
+        .single();
 
-      const { data, error } = await response.json();
+      if (existingStudent && !searchError) {
+        // Return existing student
+        localStorage.setItem(STUDENT_ID_KEY, existingStudent.id);
+        setStudent(existingStudent);
+        return existingStudent;
+      }
+
+      // Create new student if not found
+      const { data, error } = await supabase
+        .from('students')
+        .insert({ name: name.trim(), age })
+        .select()
+        .single();
 
       if (error) {
-        throw new Error(error);
+        throw new Error(error.message);
       }
 
       localStorage.setItem(STUDENT_ID_KEY, data.id);
@@ -76,20 +92,19 @@ export const useStudent = () => {
     if (student.last_study_date === today) {
       return; // Already studied today
     } else if (student.last_study_date === yesterday) {
-      newStreak = student.current_streak + 1;
+      newStreak = (student.current_streak || 0) + 1;
     }
 
     try {
-      const response = await fetch(`${API_URL}/students/${student.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const { data, error } = await supabase
+        .from('students')
+        .update({
           current_streak: newStreak,
           last_study_date: today
         })
-      });
-
-      const { data, error } = await response.json();
+        .eq('id', student.id)
+        .select()
+        .single();
 
       if (!error && data) {
         setStudent(data);
