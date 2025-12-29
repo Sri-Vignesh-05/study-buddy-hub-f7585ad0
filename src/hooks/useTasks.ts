@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 type SubjectType = 'physics' | 'chemistry' | 'biology';
 type TaskType = 'daily' | 'weekly' | 'monthly';
@@ -15,8 +16,6 @@ interface Task {
   estimated_minutes: number | null;
 }
 
-const API_URL = 'http://localhost:5000/api';
-
 export const useTasks = (studentId: string | undefined) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,15 +26,17 @@ export const useTasks = (studentId: string | undefined) => {
       return;
     }
 
-    try {
-      const response = await fetch(`${API_URL}/tasks?student_id=${studentId}`);
-      const { data, error } = await response.json();
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('student_id', studentId)
+      .order('created_at', { ascending: false });
 
-      if (!error && data) {
-        setTasks(data as Task[]);
-      }
-    } catch (err) {
-      console.error("Failed to fetch tasks", err);
+    if (!error && data) {
+      setTasks(data.map(task => ({
+        ...task,
+        is_completed: task.is_completed ?? false
+      })) as Task[]);
     }
     setLoading(false);
   };
@@ -45,73 +46,58 @@ export const useTasks = (studentId: string | undefined) => {
   }, [studentId]);
 
   const addTask = async (title: string, subject: SubjectType, taskType: TaskType, estimatedMinutes?: number) => {
-    if (!studentId) return;
+    if (!studentId) return { data: null, error: 'No student ID' };
 
-    try {
-      const response = await fetch(`${API_URL}/tasks`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          student_id: studentId,
-          title,
-          subject,
-          task_type: taskType,
-          estimated_minutes: estimatedMinutes || null
-        })
-      });
+    const { data, error } = await supabase
+      .from('tasks')
+      .insert({
+        student_id: studentId,
+        title,
+        subject,
+        task_type: taskType,
+        estimated_minutes: estimatedMinutes || null
+      })
+      .select()
+      .single();
 
-      const { data, error } = await response.json();
-
-      if (!error && data) {
-        setTasks(prev => [data as Task, ...prev]);
-      }
-      return { data, error };
-    } catch (err) {
-      console.error("Failed to add task", err);
-      return { data: null, error: err };
+    if (!error && data) {
+      setTasks(prev => [{
+        ...data,
+        is_completed: data.is_completed ?? false
+      } as Task, ...prev]);
     }
+    return { data, error };
   };
 
   const toggleTask = async (taskId: string) => {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
 
-    try {
-      const response = await fetch(`${API_URL}/tasks/${taskId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          is_completed: !task.is_completed,
-          completed_at: !task.is_completed ? new Date().toISOString() : null
-        })
-      });
+    const { error } = await supabase
+      .from('tasks')
+      .update({
+        is_completed: !task.is_completed,
+        completed_at: !task.is_completed ? new Date().toISOString() : null
+      })
+      .eq('id', taskId);
 
-      const { data, error } = await response.json();
-
-      if (!error) {
-        setTasks(prev => prev.map(t =>
-          t.id === taskId
-            ? { ...t, is_completed: !t.is_completed, completed_at: !t.is_completed ? new Date().toISOString() : null }
-            : t
-        ));
-      }
-    } catch (err) {
-      console.error("Failed to toggle task", err);
+    if (!error) {
+      setTasks(prev => prev.map(t =>
+        t.id === taskId
+          ? { ...t, is_completed: !t.is_completed, completed_at: !t.is_completed ? new Date().toISOString() : null }
+          : t
+      ));
     }
   };
 
   const deleteTask = async (taskId: string) => {
-    try {
-      const response = await fetch(`${API_URL}/tasks/${taskId}`, {
-        method: 'DELETE'
-      });
-      const { error } = await response.json();
+    const { error } = await supabase
+      .from('tasks')
+      .delete()
+      .eq('id', taskId);
 
-      if (!error) {
-        setTasks(prev => prev.filter(t => t.id !== taskId));
-      }
-    } catch (err) {
-      console.error("Failed to delete task", err);
+    if (!error) {
+      setTasks(prev => prev.filter(t => t.id !== taskId));
     }
   };
 
