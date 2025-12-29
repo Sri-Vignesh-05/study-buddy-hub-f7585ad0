@@ -21,20 +21,16 @@ export const useStudent = () => {
       const storedId = localStorage.getItem(STUDENT_ID_KEY);
 
       if (storedId) {
-        try {
-          const { data, error } = await supabase
-            .from('students')
-            .select('*')
-            .eq('id', storedId)
-            .single();
+        const { data, error } = await supabase
+          .from('students')
+          .select('*')
+          .eq('id', storedId)
+          .maybeSingle();
 
-          if (data && !error) {
-            setStudent(data);
-          } else {
-            localStorage.removeItem(STUDENT_ID_KEY);
-          }
-        } catch (err) {
-          console.error("Failed to load student", err);
+        if (data && !error) {
+          setStudent(data);
+        } else {
+          localStorage.removeItem(STUDENT_ID_KEY);
         }
       }
 
@@ -45,40 +41,35 @@ export const useStudent = () => {
   }, []);
 
   const registerStudent = async (name: string, age: number) => {
-    try {
-      // Check if student with same name and age already exists
-      const { data: existingStudent, error: searchError } = await supabase
-        .from('students')
-        .select('*')
-        .eq('name', name.trim())
-        .eq('age', age)
-        .single();
+    // Check if student with same name and age already exists
+    const { data: existingStudent } = await supabase
+      .from('students')
+      .select('*')
+      .eq('name', name.trim())
+      .eq('age', age)
+      .maybeSingle();
 
-      if (existingStudent && !searchError) {
-        // Return existing student
-        localStorage.setItem(STUDENT_ID_KEY, existingStudent.id);
-        setStudent(existingStudent);
-        return existingStudent;
-      }
-
-      // Create new student if not found
-      const { data, error } = await supabase
-        .from('students')
-        .insert({ name: name.trim(), age })
-        .select()
-        .single();
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      localStorage.setItem(STUDENT_ID_KEY, data.id);
-      setStudent(data);
-      return data;
-    } catch (err) {
-      console.error("Registration failed", err);
-      throw err;
+    if (existingStudent) {
+      // Return existing student
+      localStorage.setItem(STUDENT_ID_KEY, existingStudent.id);
+      setStudent(existingStudent);
+      return existingStudent;
     }
+
+    // Create new student if not found
+    const { data, error } = await supabase
+      .from('students')
+      .insert({ name: name.trim(), age })
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    localStorage.setItem(STUDENT_ID_KEY, data.id);
+    setStudent(data);
+    return data;
   };
 
   const updateStreak = async () => {
@@ -95,24 +86,25 @@ export const useStudent = () => {
       newStreak = (student.current_streak || 0) + 1;
     }
 
-    try {
-      const { data, error } = await supabase
-        .from('students')
-        .update({
-          current_streak: newStreak,
-          last_study_date: today
-        })
-        .eq('id', student.id)
-        .select()
-        .single();
+    const { data, error } = await supabase
+      .from('students')
+      .update({
+        current_streak: newStreak,
+        last_study_date: today
+      })
+      .eq('id', student.id)
+      .select()
+      .single();
 
-      if (!error && data) {
-        setStudent(data);
-      }
-    } catch (err) {
-      console.error("Failed to update streak", err);
+    if (!error && data) {
+      setStudent(data);
     }
   };
 
-  return { student, loading, registerStudent, updateStreak };
+  const logout = () => {
+    localStorage.removeItem(STUDENT_ID_KEY);
+    setStudent(null);
+  };
+
+  return { student, loading, registerStudent, updateStreak, logout };
 };
