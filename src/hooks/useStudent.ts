@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
 
 interface Student {
   id: string;
@@ -9,41 +8,69 @@ interface Student {
   current_streak: number | null;
   last_study_date: string | null;
   created_at: string;
-  user_id: string | null;
 }
 
+const STUDENT_ID_KEY = 'neet_student_id';
+
 export const useStudent = () => {
-  const { user, session, loading: authLoading } = useAuth();
   const [student, setStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadStudent = async () => {
-      if (authLoading) return;
-      
-      if (!user) {
-        setStudent(null);
-        setLoading(false);
-        return;
-      }
+      const storedId = localStorage.getItem(STUDENT_ID_KEY);
 
-      const { data, error } = await supabase
-        .from('students')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
+      if (storedId) {
+        const { data, error } = await supabase
+          .from('students')
+          .select('*')
+          .eq('id', storedId)
+          .maybeSingle();
 
-      if (data && !error) {
-        setStudent(data);
-      } else {
-        setStudent(null);
+        if (data && !error) {
+          setStudent(data);
+        } else {
+          localStorage.removeItem(STUDENT_ID_KEY);
+        }
       }
 
       setLoading(false);
     };
 
     loadStudent();
-  }, [user, authLoading]);
+  }, []);
+
+  const registerStudent = async (name: string, age: number) => {
+    // Check if student with same name and age already exists
+    const { data: existingStudent } = await supabase
+      .from('students')
+      .select('*')
+      .eq('name', name.trim())
+      .eq('age', age)
+      .maybeSingle();
+
+    if (existingStudent) {
+      // Return existing student
+      localStorage.setItem(STUDENT_ID_KEY, existingStudent.id);
+      setStudent(existingStudent);
+      return existingStudent;
+    }
+
+    // Create new student if not found
+    const { data, error } = await supabase
+      .from('students')
+      .insert({ name: name.trim(), age })
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    localStorage.setItem(STUDENT_ID_KEY, data.id);
+    setStudent(data);
+    return data;
+  };
 
   const updateStreak = async () => {
     if (!student) return;
@@ -74,10 +101,10 @@ export const useStudent = () => {
     }
   };
 
-  return { 
-    student, 
-    loading: authLoading || loading, 
-    updateStreak,
-    isAuthenticated: !!session
+  const logout = () => {
+    localStorage.removeItem(STUDENT_ID_KEY);
+    setStudent(null);
   };
+
+  return { student, loading, registerStudent, updateStreak, logout };
 };

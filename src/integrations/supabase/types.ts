@@ -22,7 +22,6 @@ export type Database = {
           id: string
           last_study_date: string | null
           name: string
-          user_id: string | null
         }
         Insert: {
           age: number
@@ -31,7 +30,6 @@ export type Database = {
           id?: string
           last_study_date?: string | null
           name: string
-          user_id?: string | null
         }
         Update: {
           age?: number
@@ -40,7 +38,6 @@ export type Database = {
           id?: string
           last_study_date?: string | null
           name?: string
-          user_id?: string | null
         }
         Relationships: []
       }
@@ -120,43 +117,14 @@ export type Database = {
           },
         ]
       }
-      user_roles: {
-        Row: {
-          created_at: string
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      get_current_student_id: { Args: never; Returns: string }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
-      app_role: "admin" | "user"
       subject_type: "physics" | "chemistry" | "biology"
       task_type: "daily" | "weekly" | "monthly"
     }
@@ -286,7 +254,6 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
       subject_type: ["physics", "chemistry", "biology"],
       task_type: ["daily", "weekly", "monthly"],
     },
