@@ -1,5 +1,6 @@
 import { useStudent } from '@/hooks/useStudent';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdmin } from '@/hooks/useAdmin';
 import { useTasks } from '@/hooks/useTasks';
 import { useStudyLogs } from '@/hooks/useStudyLogs';
 import MotivationalBanner from '@/components/MotivationalBanner';
@@ -8,11 +9,12 @@ import StudyTimeLogger from '@/components/StudyTimeLogger';
 import TaskManager from '@/components/TaskManager';
 import ProgressCharts from '@/components/ProgressCharts';
 import { Button } from '@/components/ui/button';
-import { Stethoscope, LogOut } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Stethoscope, LogOut, Shield } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const Dashboard = () => {
+  const { isAdmin } = useAdmin();
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { student, updateStreak } = useStudent();
@@ -51,10 +53,20 @@ const Dashboard = () => {
               </p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={handleLogout}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/admin">
+                  <Shield className="w-4 h-4 mr-2" />
+                  Admin
+                </Link>
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </header>
 
