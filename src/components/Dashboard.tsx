@@ -1,4 +1,5 @@
 import { useStudent } from '@/hooks/useStudent';
+import { useAuth } from '@/hooks/useAuth';
 import { useTasks } from '@/hooks/useTasks';
 import { useStudyLogs } from '@/hooks/useStudyLogs';
 import MotivationalBanner from '@/components/MotivationalBanner';
@@ -7,16 +8,29 @@ import StudyTimeLogger from '@/components/StudyTimeLogger';
 import TaskManager from '@/components/TaskManager';
 import ProgressCharts from '@/components/ProgressCharts';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
-import { Settings, Stethoscope } from 'lucide-react';
+import { Stethoscope, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
   const { student, updateStreak } = useStudent();
   const { tasks, addTask, toggleTask, deleteTask, getCompletionStats } = useTasks(student?.id);
-  const { logStudyTime, getTodaysHours, getWeeklyData, getTotalHours } = useStudyLogs(student?.id);
+  const { logStudyTime, getTodaysHours, getTotalHours } = useStudyLogs(student?.id);
 
   const handleStudyLogged = () => {
     updateStreak();
+  };
+
+  const handleLogout = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast.error('Failed to sign out');
+    } else {
+      toast.success('Signed out successfully');
+      navigate('/auth');
+    }
   };
 
   const completionStats = getCompletionStats();
@@ -37,7 +51,10 @@ const Dashboard = () => {
               </p>
             </div>
           </div>
-
+          <Button variant="outline" size="sm" onClick={handleLogout}>
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
+          </Button>
         </div>
       </header>
 

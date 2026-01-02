@@ -1,35 +1,87 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Users, ClipboardList } from 'lucide-react';
+import { ArrowLeft, Users, ClipboardList, Shield } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useAdmin } from '@/hooks/useAdmin';
 
 const Admin = () => {
+  const navigate = useNavigate();
+  const { session, loading: authLoading } = useAuth();
+  const { isAdmin, loading: adminLoading } = useAdmin();
+  
   const [students, setStudents] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [studentsRes, tasksRes] = await Promise.all([
-          supabase.from('students').select('*'),
-          supabase.from('tasks').select('*')
-        ]);
+    if (!authLoading && !session) {
+      navigate('/auth');
+      return;
+    }
 
-        if (studentsRes.data) setStudents(studentsRes.data);
-        if (tasksRes.data) setTasks(tasksRes.data);
-      } catch (err) {
-        console.error("Failed to fetch admin data", err);
-      }
-      setLoading(false);
-    };
-    fetchData();
-  }, []);
+    if (!adminLoading && !isAdmin && session) {
+      navigate('/');
+      return;
+    }
+
+    if (isAdmin) {
+      fetchData();
+    }
+  }, [session, authLoading, isAdmin, adminLoading, navigate]);
+
+  const fetchData = async () => {
+    try {
+      const [studentsRes, tasksRes] = await Promise.all([
+        supabase.from('students').select('*'),
+        supabase.from('tasks').select('*')
+      ]);
+
+      if (studentsRes.data) setStudents(studentsRes.data);
+      if (tasksRes.data) setTasks(tasksRes.data);
+    } catch (err) {
+      console.error("Failed to fetch admin data", err);
+    }
+    setDataLoading(false);
+  };
 
   const getStudentTasks = (studentId: string) => tasks.filter(t => t.student_id === studentId);
+
+  if (authLoading || adminLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="mt-4 text-muted-foreground">Checking permissions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session || !isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <Shield className="w-16 h-16 mx-auto text-destructive mb-4" />
+            <CardTitle>Access Denied</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-muted-foreground">
+              You don't have permission to access the admin dashboard.
+            </p>
+            <Button asChild>
+              <Link to="/">Return Home</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -53,7 +105,7 @@ const Admin = () => {
         <Card>
           <CardHeader><CardTitle>All Students</CardTitle></CardHeader>
           <CardContent>
-            {loading ? <p>Loading...</p> : (
+            {dataLoading ? <p>Loading...</p> : (
               <Table>
                 <TableHeader>
                   <TableRow>
