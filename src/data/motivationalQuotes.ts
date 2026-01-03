@@ -151,9 +151,11 @@ export const motivationalQuotes = [
 
 export const getTodaysQuote = (): { quote: string; author: string } => {
   const today = new Date();
-  const startOfYear = new Date(today.getFullYear(), 0, 0);
-  const diff = today.getTime() - startOfYear.getTime();
-  const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const quoteIndex = dayOfYear % motivationalQuotes.length;
+  // Start date: January 3, 2026 - first quote displays on this day
+  const startDate = new Date(2026, 0, 3); // Month is 0-indexed (0 = January)
+  const diffTime = today.getTime() - startDate.getTime();
+  const daysSinceStart = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  // Ensure we get a valid index (handle dates before start date)
+  const quoteIndex = Math.max(0, daysSinceStart) % motivationalQuotes.length;
   return motivationalQuotes[quoteIndex];
 };
